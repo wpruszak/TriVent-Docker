@@ -1,0 +1,37 @@
+version: "2"
+
+services:
+  nginx:
+    image: nginx:latest
+    links:
+        - php
+    ports:
+        - "80:80"
+    volumes:
+        - ./src:/var/www/php
+        - ./nginx/site.conf:/etc/nginx/conf.d/site.conf
+    expose:
+        - "80"
+
+  php:
+    build: php
+    links:
+      - db
+    volumes:
+      - ./src:/var/www/php
+      - ${SSH_AUTH_SOCK}:/ssh-agent
+    environment:
+      - SSH_AUTH_SOCK=/ssh-agent
+
+  db:
+    image: mariadb
+    volumes:
+      - ./db/data:/var/lib/mysql
+      - ./src:/var/www/php
+    environment:
+      MYSQL_ROOT_PASSWORD: dev1
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    links:
+      - db
